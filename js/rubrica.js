@@ -32,7 +32,7 @@ export const TIEMPOS = { pitch: 5, preguntas: null, cambio: 1 };
 export const textoTiempos = (t = TIEMPOS) =>
   `${t.pitch} min de pitch + ${t.preguntas ? `${t.preguntas} min de preguntas` : "preguntas sin límite"}`;
 
-// Fecha límite para que los equipos suban su PDF: lunes 24/11/2026, 11:59 p. m. (Perú)
+// Fecha límite para que los equipos suban su PDF: martes 24/11/2026, 11:59 p. m. (Perú)
 export const FECHA_LIMITE = "2026-11-24T23:59:00-05:00";
 
 // Reglas de los equipos

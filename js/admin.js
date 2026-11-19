@@ -4,13 +4,16 @@
 // Todo lo que se guarda pasa por la base, que vuelve a revisar
 // el código del admin y las reglas (2 a 5 integrantes, etc.).
 // =========================================================
-import { api, ES_DEMO, demoDatos } from "./api.js?v=202611190606";
-import { $, esc, I, avatar, aviso, modal, confirmar, fondoAnimado } from "./ui.js?v=202611190606";
-import { ETAPAS, EJES, TIPOS_INTEGRANTE, EQUIPO_REGLAS, validarIntegrantes, textoTiempos, eje as ejeDe } from "./rubrica.js?v=202611190606";
+import { api, ES_DEMO, demoDatos } from "./api.js?v=202611190633";
+import { $, esc, I, avatar, aviso, modal, confirmar, fondoAnimado } from "./ui.js?v=202611190633";
+import { ETAPAS, EJES, TIPOS_INTEGRANTE, EQUIPO_REGLAS, validarIntegrantes, textoTiempos, eje as ejeDe } from "./rubrica.js?v=202611190633";
+import { pestanaResultados, pestanaPresentaciones } from "./admin-etapas.js?v=202611190633";
 
 const PESTANAS = [
   { id: "equipos", nombre: "Equipos", icono: "personas" },
   { id: "jurados", nombre: "Jurados", icono: "mazo" },
+  { id: "presentaciones", nombre: "Presentaciones", icono: "pizarra" },
+  { id: "resultados", nombre: "Resultados", icono: "tabla" },
   { id: "rubrica", nombre: "Rúbrica", icono: "libro" },
   { id: "ajustes", nombre: "Ajustes", icono: "llave" },
 ];
@@ -107,11 +110,15 @@ export function panelAdmin(app, s, h) {
     }));
   }
 
+  const estado = {};
   function pintar() {
     pintarKpis();
     pintarPestanas();
+    estado.pestana = pest;
     if (pest === "equipos") pintarEquipos();
     else if (pest === "jurados") pintarJurados();
+    else if (pest === "resultados") pestanaResultados(cuerpo, s, estado);
+    else if (pest === "presentaciones") pestanaPresentaciones(cuerpo, s, estado, datos, () => cargar());
     else if (pest === "rubrica") cuerpo.innerHTML = h.htmlRubrica();
     else pintarAjustes();
   }

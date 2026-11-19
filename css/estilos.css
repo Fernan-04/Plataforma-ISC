@@ -2213,3 +2213,89 @@ body{ background:var(--noche); }
 .adm-peligro{ border-color:rgba(253,68,63,.35); }
 .adm-peligro h2 svg{ color:#FF9C99 !important; }
 .adm-sel{ width:auto; min-width:120px; padding:.45em .7em; }
+
+/* ---------- ISC UTP · Panel del equipo ---------- */
+.eq-cols{ gap:14px; align-items:start; margin-top:14px; }
+.eq-cols .pres-slots{ grid-template-columns:1fr; margin:4px 0; gap:10px; }
+.eq-cols .pres-slot{ border-radius:16px; background:rgba(255,255,255,.03); padding:12px; flex-wrap:wrap; }
+.eq-cols .pres-slot__ico{ width:46px; height:54px; background:linear-gradient(160deg, var(--violeta), var(--morado)); }
+.eq-cols .pres-slot__ico svg{ width:22px; height:22px; }
+.eq-cols .pres-slot--ok .pres-slot__ico{ background:linear-gradient(160deg, var(--verde), #0E8A5F); }
+.pres-slot__txt b{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.pres-slot__txt small{ color:var(--tenue); font-size:.8rem; }
+.pres-slot__arch{ display:inline-flex; gap:6px; align-items:center; font-size:.84rem; color:#8FF2C0; word-break:break-all; }
+.pres-slot__arch svg{ width:1em; height:1em; flex:none; }
+.eq-subiendo{ color:var(--oro) !important; font-weight:600; }
+.eq-plazo{ display:flex; gap:12px; align-items:center; padding:14px 18px; margin-top:14px; border-color:rgba(43,217,140,.4); }
+.eq-plazo > svg{ width:26px; height:26px; color:var(--verde); flex:none; }
+.eq-plazo div{ display:grid; } .eq-plazo small{ color:var(--tenue); }
+.eq-plazo--cerrado{ border-color:rgba(253,68,63,.45); } .eq-plazo--cerrado > svg{ color:#FF9C99; }
+.eq-ints{ margin:0; padding:0; list-style:none; display:grid; gap:6px; }
+.eq-ints li{ padding:8px 10px; border-radius:10px; background:rgba(255,255,255,.04); }
+.eq-ints b{ color:var(--oro); } .eq-ints small{ color:var(--tenue); }
+.eq-res{ padding:18px; margin-top:14px; display:grid; gap:10px; border-color:rgba(255,194,61,.45); }
+.eq-res__cab{ display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
+.eq-res__cab h2{ margin:0 0 6px; font-size:1.15rem; }
+.eq-res__nota{ text-align:right; } .eq-res__nota b{ font-family:var(--neon); font-weight:400; font-size:2.6rem; line-height:1; color:var(--oro); }
+.eq-res__nota small{ display:block; color:var(--tenue); }
+.eq-res__sub{ margin:6px 0 0; font-size:1rem; }
+.eq-com{ padding:12px 14px; border-radius:14px; border:1px solid var(--borde); background:rgba(255,255,255,.03); }
+.eq-com p{ margin:.4em 0 0; white-space:pre-wrap; }
+.eq-com details{ margin-top:6px; font-size:.84rem; color:var(--niebla); } .eq-com ul{ margin:6px 0 0; padding-left:18px; }
+.jur-archivos{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+.jur-archivos .ayuda svg{ width:1em; height:1em; vertical-align:-2px; }
+
+/* ---------- ISC UTP · Admin: resultados y presentaciones ---------- */
+.adm-res th small{ font-weight:500; }
+.adm-res td{ white-space:nowrap; }
+.adm-res td:nth-child(2){ white-space:normal; min-width:160px; }
+.adm-res--top{ background:rgba(43,217,140,.07); }
+.adm-res--fuera{ opacity:.6; }
+.adm-res__estado{ white-space:normal !important; min-width:150px; }
+.adm-res__estado .chip{ margin:2px 2px 2px 0; }
+.adm-res__acc{ display:flex; gap:6px; }
+.adm-res__botones{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+.adm-des{ margin:0; padding-left:18px; color:var(--niebla); font-size:.88rem; }
+.adm-orden{ list-style:none; margin:10px 0; padding:0; display:grid; gap:8px; }
+.adm-orden li{ display:flex; gap:12px; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:14px; border:1px solid var(--borde); background:rgba(255,255,255,.04); }
+.adm-orden li > span:last-child{ display:flex; gap:6px; flex:none; }
+.adm-orden--grande li{ justify-content:flex-start; }
+.adm-orden--grande li > span:last-child{ margin-left:auto; }
+.adm-orden__txt{ display:grid; gap:4px; min-width:0; } .adm-orden__txt b{ overflow-wrap:anywhere; }
+.adm-orden__txt > span{ display:flex; gap:6px; flex-wrap:wrap; }
+.adm-orden__txt .chip{ text-decoration:none; }
+.adm-orden--baraja li{ animation:baraja .11s ease; }
+@keyframes baraja{ from{ transform:translateX(-6px); opacity:.6; } to{ transform:none; opacity:1; } }
+
+/* ---------- ISC UTP · Sala de proyección ---------- */
+body.sin-scroll{ overflow:hidden; }
+.sala-isc{ position:fixed; inset:0; z-index:200; background:#05040F; color:#fff; display:grid; grid-template-rows:auto 1fr; outline:none; }
+.sala-isc__top{ display:flex; align-items:center; gap:18px; padding:10px clamp(12px,2vw,24px); background:linear-gradient(90deg, rgba(91,69,224,.55), rgba(13,11,46,.9)); border-bottom:1px solid rgba(179,164,255,.25); }
+.sala-isc__turno{ display:grid; min-width:0; flex:1; } .sala-isc__turno small{ font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--lila); }
+.sala-isc__turno b{ font-size:clamp(1rem,2vw,1.4rem); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sala-isc__fase{ font-size:.8rem; font-weight:700; padding:.3em .8em; border-radius:99px; background:rgba(255,255,255,.1); white-space:nowrap; }
+.sala-isc__reloj{ font-family:var(--neon); font-size:clamp(2rem,5vw,3.6rem); line-height:1; min-width:3.6em; text-align:right; font-variant-numeric:tabular-nums; }
+.sala-isc__reloj--espera{ opacity:.75; }
+.sala-isc__reloj--alerta{ color:var(--ambar); }
+.sala-isc__reloj--fin{ color:#FF4D4D; animation:parpadeo .8s steps(2, start) infinite; }
+.sala-isc__reloj--libre{ color:var(--celeste); }
+@keyframes parpadeo{ to{ visibility:hidden; } }
+.sala-isc__vista{ position:relative; display:grid; place-items:center; overflow:hidden; min-height:0; }
+.sala-isc__pdf{ display:block; background:#fff; box-shadow:0 0 60px rgba(0,0,0,.6); }
+.sala-isc__pag{ position:absolute; right:14px; bottom:10px; font-size:.75rem; color:rgba(255,255,255,.45); }
+.sala-isc__msg{ font-size:1.2rem; color:var(--niebla); text-align:center; padding:20px; max-width:40ch; }
+.sala-isc__portada{ text-align:center; padding:24px; max-width:1100px; }
+.sala-isc__pre{ font-size:clamp(.9rem,1.6vw,1.2rem); letter-spacing:.14em; text-transform:uppercase; color:var(--lila); margin:0; }
+.sala-isc__portada h1{ font-family:var(--neon); font-weight:400; font-size:clamp(2.2rem,7vw,5.5rem); line-height:1.05; margin:.25em 0;
+  background:linear-gradient(90deg, #fff, #CBB8FF 55%, #8FE6F6); -webkit-background-clip:text; background-clip:text; color:transparent; overflow-wrap:anywhere; }
+.sala-isc__eje{ color:var(--verde); font-weight:700; font-size:clamp(1rem,2vw,1.4rem); margin:0; }
+.sala-isc__gente{ font-size:clamp(.95rem,1.8vw,1.3rem); color:var(--niebla); } .sala-isc__gente b{ color:var(--oro); }
+.sala-isc__ayuda{ color:var(--tenue); margin-top:2em; }
+.sala-isc__negro{ position:absolute; inset:0; background:#000; z-index:3; }
+.sala-isc__tecla{ position:absolute; top:84px; left:50%; transform:translateX(-50%); z-index:5; padding:.5em 1.2em; border-radius:99px; background:var(--verde); color:#03140c; font-weight:800; }
+.sala-isc__ctrl{ position:absolute; left:50%; bottom:16px; transform:translate(-50%, 20px); z-index:6; display:flex; gap:6px; flex-wrap:wrap; justify-content:center; align-items:center;
+  max-width:calc(100% - 24px); padding:8px 10px; border-radius:16px; background:rgba(13,11,46,.92); border:1px solid rgba(179,164,255,.3); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; }
+.sala-isc--ctrl .sala-isc__ctrl{ opacity:1; pointer-events:auto; transform:translate(-50%, 0); }
+.sala-isc__sep{ width:1px; height:24px; background:rgba(255,255,255,.15); }
+@media (max-width:640px){ .sala-isc__top{ flex-wrap:wrap; gap:8px; } .sala-isc__top .isc-marca small{ display:none; } .sala-isc__ctrl .btn span{ display:none; } }
+@media (prefers-reduced-motion: reduce){ .sala-isc__reloj--fin{ animation:none; } .adm-orden--baraja li{ animation:none; } }

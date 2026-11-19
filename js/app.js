@@ -1,11 +1,13 @@
 // =========================================================
 // Panel ISC UTP 2027 · arranque y portada
 // =========================================================
-import { api, ES_DEMO, DEMO_CODIGOS } from "./api.js?v=202611190606";
-import { $, esc, I, IMG, modal, fondoAnimado } from "./ui.js?v=202611190606";
-import { COMPETENCIA, ETAPAS, EJES, CRITERIOS, NIVELES, TOTAL, textoTiempos } from "./rubrica.js?v=202611190606";
-import { panelAdmin } from "./admin.js?v=202611190606";
-import { panelJurado } from "./jurado.js?v=202611190606";
+import { api, ES_DEMO, DEMO_CODIGOS } from "./api.js?v=202611190633";
+import { $, esc, I, IMG, modal, fondoAnimado } from "./ui.js?v=202611190633";
+import { COMPETENCIA, ETAPAS, EJES, CRITERIOS, NIVELES, TOTAL, textoTiempos } from "./rubrica.js?v=202611190633";
+import { panelAdmin } from "./admin.js?v=202611190633";
+import { panelJurado } from "./jurado.js?v=202611190633";
+import { panelEquipo } from "./equipo.js?v=202611190633";
+import { panelProyeccion } from "./proyeccion.js?v=202611190633";
 
 const app = $("#app");
 const SESION = "isc-utp-sesion";
@@ -196,6 +198,8 @@ function abrir() {
   const s = sesion.leer();
   if (s?.rol === "admin") return panelAdmin(app, s, { marcaISC, bandaDemo, salir, htmlRubrica });
   if (s?.rol === "jurado") return panelJurado(app, s, { marcaISC, bandaDemo, salir });
+  if (s?.rol === "equipo") return panelEquipo(app, s, { marcaISC, bandaDemo, salir });
+  if (s?.rol === "proyeccion") return panelProyeccion(app, s, { marcaISC, bandaDemo, salir });
   if (s?.rol) return panelEnObra(s);
   portada();
 }

@@ -5,9 +5,9 @@
 // comentario general para el equipo, o «No se presentó».
 // La base vuelve a revisar todo (niveles válidos, etapa abierta, etc.).
 // =========================================================
-import { api } from "./api.js?v=202611190606";
-import { $, $$, esc, I, avatar, aviso, confirmar, fondoAnimado, lanzarConfeti } from "./ui.js?v=202611190606";
-import { ETAPAS, CRITERIOS, NIVELES, TOTAL, TIPOS_INTEGRANTE, eje as ejeDe, etapa as etapaDe } from "./rubrica.js?v=202611190606";
+import { api } from "./api.js?v=202611190633";
+import { $, $$, esc, I, avatar, aviso, confirmar, fondoAnimado, lanzarConfeti } from "./ui.js?v=202611190633";
+import { ETAPAS, CRITERIOS, NIVELES, TOTAL, TIPOS_INTEGRANTE, eje as ejeDe, etapa as etapaDe } from "./rubrica.js?v=202611190633";
 
 const CLAVE_ETAPA = "isc-utp-jurado-etapa";
 const LINKEDIN = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>`;
@@ -154,7 +154,15 @@ export function panelJurado(app, s, h) {
         <h1>${esc(e.nombre_proyecto)}</h1>
         <p>${esc(ejeDe(e.eje)?.nombre || "")}${e.ods ? ` · ${esc(e.ods)}` : ""}</p>
         <div class="jur-hero__chips">${e.integrantes.map((i) => `<span class="chip ${i.es_lider ? "chip--ambar" : ""}">${i.es_lider ? "★ " : ""}${esc(i.nombre)}${tipoCorto(i.tipo) ? ` · ${esc(tipoCorto(i.tipo))}` : ""}</span>`).join("")}</div>
-        <p class="ayuda" style="margin-top:10px">${I.info} El PDF del equipo aparecerá aquí cuando lo suba.</p>
+        <div class="jur-archivos">${(() => {
+          const a = e.archivos || {};
+          const url = (t) => (a[`${t}_ruta`] ? api.urlArchivo(a[`${t}_ruta`]) : null);
+          const b = [];
+          if (url("pdf")) b.push(`<a class="btn btn--mini btn--naranja" href="${esc(url("pdf"))}" target="_blank" rel="noopener">${I.pizarra}Ver PDF</a>`);
+          if (url("ppt")) b.push(`<a class="btn btn--mini" href="${esc(url("ppt"))}" target="_blank" rel="noopener">${I.descargar}Bajar PPT</a>`);
+          if (url("video")) b.push(`<a class="btn btn--mini" href="${esc(url("video"))}" target="_blank" rel="noopener">${I.camara}Ver video</a>`);
+          return b.length ? b.join("") : `<span class="ayuda">${I.info} El equipo aún no subió su presentación.</span>`;
+        })()}</div>
       </section>
       ${soloLeer ? `<div class="cerrado">${I.candado}<span>La calificación de esta etapa está cerrada: solo puedes ver${previa ? " lo que guardaste" : ""}.</span></div>` : ""}
       ${previa ? `<p class="nota">Ya calificaste a este equipo${previa.no_presento ? " como «No se presentó»" : ` con <b>${previa.total} pts</b>`}. ${soloLeer ? "" : "Puedes corregir y volver a guardar."}</p>` : ""}

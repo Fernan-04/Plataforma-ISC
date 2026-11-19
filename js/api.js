@@ -3,8 +3,8 @@
 // Publicado usa Supabase. En modo de prueba (?demo en la dirección)
 // usa datos de ejemplo guardados solo en este navegador.
 // =========================================================
-import { SUPABASE_URL, SUPABASE_KEY } from "./config.js?v=202611190606";
-import { validarIntegrantes, FECHA_LIMITE, TIEMPOS, ETAPAS, CRITERIOS } from "./rubrica.js?v=202611190606";
+import { SUPABASE_URL, SUPABASE_KEY } from "./config.js?v=202611190633";
+import { validarIntegrantes, FECHA_LIMITE, TIEMPOS, ETAPAS, CRITERIOS } from "./rubrica.js?v=202611190633";
 
 const DEMO = typeof window !== "undefined" && window.__ISC_DEMO__ === true;
 export const ES_DEMO = DEMO;
@@ -18,6 +18,15 @@ async function rpc(fn, args) {
   if (error) throw new Error(error.message || "No se pudo conectar con la base de datos");
   return data;
 }
+
+const BUCKET = "isc-archivos";
+const MIME_EXT = { pdf: "application/pdf", ppt: "application/vnd.ms-powerpoint", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation", mp4: "video/mp4", mov: "video/quicktime", webm: "video/webm" };
+// Nombre seguro para la ruta (sin tildes ni espacios raros)
+const nombreSeguro = (n) => String(n || "archivo").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-80) || "archivo";
+const tipoMime = (f) => f.type || MIME_EXT[String(f.name).split(".").pop().toLowerCase()] || "application/octet-stream";
+
+// Dirección pública de un archivo (las rutas llevan un identificador imposible de adivinar)
+const urlReal = (ruta) => (ruta ? `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${ruta.split("/").map(encodeURIComponent).join("/")}` : null);
 
 const real = {
   entrar: (codigo) => rpc("isc_entrar", { p_codigo: codigo }),
@@ -38,6 +47,27 @@ const real = {
     p_codigo: c, p_etapa: k.etapa, p_equipo: k.equipo_id, p_puntajes: k.puntajes,
     p_justificaciones: k.justificaciones, p_comentario: k.comentario, p_no_presento: !!k.no_presento,
   }),
+  // Equipo
+  equipoPanel: (c) => rpc("isc_equipo_panel", { p_codigo: c }),
+  async subirArchivo(c, tipo, archivo) {
+    const token = await rpc("isc_equipo_pedir_subida", { p_codigo: c, p_tipo: tipo });
+    const ruta = `${token}/${nombreSeguro(archivo.name)}`;
+    const { error } = await cliente.storage.from(BUCKET).upload(ruta, archivo, { contentType: tipoMime(archivo), upsert: false });
+    if (error) throw new Error(/size|large|exceed/i.test(error.message) ? "El archivo pesa más de 50 MB." : /mime|type/i.test(error.message) ? "Ese tipo de archivo no está permitido." : `No se pudo subir: ${error.message}`);
+    return rpc("isc_equipo_guardar_archivo", { p_codigo: c, p_tipo: tipo, p_ruta: ruta, p_nombre: archivo.name });
+  },
+  quitarArchivo: (c, tipo) => rpc("isc_equipo_quitar_archivo", { p_codigo: c, p_tipo: tipo }),
+  urlArchivo: urlReal,
+  // Resultados y orden (admin)
+  adminResultados: (c) => rpc("isc_admin_resultados", { p_codigo: c }),
+  sancion: (c, etapa, equipo, tipo, motivo) => rpc("isc_admin_sancion", { p_codigo: c, p_etapa: etapa, p_equipo: equipo, p_tipo: tipo || null, p_motivo: motivo || null }),
+  desempate: (c, etapa, equipos, motivo) => rpc("isc_admin_desempate", { p_codigo: c, p_etapa: etapa, p_equipos: equipos, p_motivo: motivo }),
+  quitarDesempate: (c, id) => rpc("isc_admin_quitar_desempate", { p_codigo: c, p_id: id }),
+  pasarFinal: (c, equipos) => rpc("isc_admin_pasar_final", { p_codigo: c, p_equipos: equipos }),
+  publicar: (c, etapa, publicar, ranking) => rpc("isc_admin_publicar", { p_codigo: c, p_etapa: etapa, p_publicar: publicar, p_ranking: ranking || null }),
+  orden: (c, etapa, equipos, sorteo) => rpc("isc_admin_orden", { p_codigo: c, p_etapa: etapa, p_equipos: equipos, p_sorteo: !!sorteo }),
+  // Proyección
+  proyeccionPanel: (c) => rpc("isc_proyeccion_panel", { p_codigo: c }),
 };
 
 // ---------------- Modo de prueba (localStorage) ----------------
@@ -74,9 +104,14 @@ function semilla() {
     }],
     etapas: ETAPAS.map((e) => ({ id: e.id, abierta: e.id === "semifinal" })),
     calificaciones: [],
+    sanciones: [],
+    desempates: [],
+    presentaciones: {},
     borrados: [],
   };
 }
+// Archivos del modo de prueba: solo en la memoria de esta pestaña (se pierden al recargar)
+const archivosDemo = new Map();
 
 export const demoDatos = {
   leer() {
@@ -85,6 +120,7 @@ export const demoDatos = {
     // Primera vez: se crean los datos de ejemplo y se guardan, para que los ids no cambien entre lecturas
     if (!d) { d = semilla(); this.guardar(d); }
     if (!d.etapas) d.etapas = ETAPAS.map((e) => ({ id: e.id, abierta: e.id === "semifinal" }));
+    d.sanciones ||= []; d.desempates ||= []; d.presentaciones ||= {};
     return d;
   },
   guardar(d) { try { localStorage.setItem(CLAVE, JSON.stringify(d)); } catch { /* sin almacenamiento */ } },
@@ -101,6 +137,12 @@ function codigoDemo(d, prefijo) {
 function exigirAdmin(c) {
   if (String(c).trim().toUpperCase() !== ADMIN_DEMO) throw new Error("Tu código de administrador no es válido. Sal y vuelve a entrar.");
 }
+function equipoDemo(d, c) {
+  const e = d.equipos.find((x) => x.codigo === String(c).trim().toUpperCase());
+  if (!e) throw new Error("Tu código de equipo no es válido. Sal y vuelve a entrar.");
+  return e;
+}
+const subidaDemo = (d) => d.config.subida_abierta && (!d.config.fecha_limite_archivos || Date.now() <= new Date(d.config.fecha_limite_archivos).getTime());
 function juradoDemo(d, c) {
   const j = d.jurados.find((x) => x.codigo === String(c).trim().toUpperCase());
   if (!j) throw new Error("Tu código de jurado no es válido. Sal y vuelve a entrar.");
@@ -111,7 +153,7 @@ const conConteo = (d) => ({
   config: d.config,
   etapas: ETAPAS.map((e) => ({ id: e.id, nombre: e.nombre, abierta: !!d.etapas.find((x) => x.id === e.id)?.abierta, calificaciones: d.calificaciones.filter((c) => c.etapa === e.id).length })),
   jurados: d.jurados.map((j) => ({ ...j, calificaciones: califDe(d, "jurado_id", j.id) })),
-  equipos: d.equipos.map((e) => ({ ...e, calificaciones: califDe(d, "equipo_id", e.id) })),
+  equipos: d.equipos.map((e) => ({ ...e, calificaciones: califDe(d, "equipo_id", e.id), archivos: d.presentaciones[e.id] || {} })),
 });
 
 const demo = {
@@ -262,7 +304,7 @@ const demo = {
         id: et.id, nombre: et.nombre, fecha: et.fecha, abierta: !!d.etapas.find((x) => x.id === et.id)?.abierta,
         equipos: d.equipos.filter((e) => enEtapa(e, et.id))
           .sort((a, b) => (orden(a, et.id) ?? 1e9) - (orden(b, et.id) ?? 1e9) || String(a.creado).localeCompare(String(b.creado)))
-          .map((e) => ({ id: e.id, nombre_proyecto: e.nombre_proyecto, eje: e.eje, ods: e.ods, orden: orden(e, et.id),
+          .map((e) => ({ id: e.id, nombre_proyecto: e.nombre_proyecto, eje: e.eje, ods: e.ods, orden: orden(e, et.id), archivos: d.presentaciones[e.id] || {},
             integrantes: (e.integrantes || []).map((i) => ({ nombre: `${i.nombres} ${i.apellidos}`, tipo: i.tipo, es_lider: i.es_lider })) })),
       })),
       calificaciones: d.calificaciones.filter((x) => x.jurado_id === j.id),
@@ -299,6 +341,138 @@ const demo = {
     demoDatos.guardar(d);
     const { jurado_id, ...sin } = fila;
     return copia(sin);
+  },
+
+  // ----- Equipo -----
+  async equipoPanel(c) {
+    await pausa();
+    const d = demoDatos.leer();
+    const e = equipoDemo(d, c);
+    const enEtapa = (et) => et === "semifinal" || e.etapa_alcanzada === "final";
+    return copia({
+      equipo: { id: e.id, nombre_proyecto: e.nombre_proyecto, eje: e.eje, ods: e.ods, etapa_alcanzada: e.etapa_alcanzada, orden_semifinal: e.orden_semifinal, orden_final: e.orden_final },
+      integrantes: (e.integrantes || []).map(({ nombres, apellidos, tipo, es_lider }) => ({ nombres, apellidos, tipo, es_lider })),
+      total_equipos: d.equipos.length,
+      config: { fecha_limite_archivos: d.config.fecha_limite_archivos, subida_abierta: d.config.subida_abierta, subida_permitida: subidaDemo(d),
+        min_pitch: d.config.min_pitch, min_preguntas: d.config.min_preguntas, min_cambio: d.config.min_cambio },
+      archivos: d.presentaciones[e.id] || {},
+      resultados: d.etapas.filter((et) => et.resultados_publicados && enEtapa(et.id)).map((et) => {
+        const r = (et.ranking || []).find((x) => x.equipo_id === e.id);
+        return {
+          etapa: et.id, nombre: ETAPAS.find((x) => x.id === et.id).nombre, puesto: r?.puesto ?? null, promedio: r?.promedio ?? null,
+          clasifico: et.id === "semifinal" ? e.etapa_alcanzada === "final" : null,
+          sancion: d.sanciones.find((x) => x.etapa === et.id && x.equipo_id === e.id) || null,
+          calificaciones: d.calificaciones.filter((x) => x.etapa === et.id && x.equipo_id === e.id)
+            .map(({ puntajes, justificaciones, comentario, no_presento, total }) => ({ puntajes, justificaciones, comentario, no_presento, total })),
+        };
+      }),
+    });
+  },
+  async subirArchivo(c, tipo, archivo) {
+    await pausa(400);
+    const d = demoDatos.leer();
+    const e = equipoDemo(d, c);
+    if (!["pdf", "ppt", "video"].includes(tipo)) throw new Error("Tipo de archivo no válido.");
+    if (!subidaDemo(d)) throw new Error("El plazo para subir archivos está cerrado. Escribe a la organización.");
+    if (archivo.size > 50 * 1024 * 1024) throw new Error("El archivo pesa más de 50 MB.");
+    const ruta = `${uid()}/${archivo.name}`;
+    try { archivosDemo.set(ruta, URL.createObjectURL(archivo)); } catch { archivosDemo.set(ruta, null); }
+    const p = (d.presentaciones[e.id] ||= {});
+    p[`${tipo}_ruta`] = ruta; p[`${tipo}_nombre`] = archivo.name; p.actualizado = ahora();
+    demoDatos.guardar(d);
+    return copia(p);
+  },
+  async quitarArchivo(c, tipo) {
+    await pausa();
+    const d = demoDatos.leer();
+    const e = equipoDemo(d, c);
+    if (!subidaDemo(d)) throw new Error("El plazo para subir archivos está cerrado. Escribe a la organización.");
+    const p = (d.presentaciones[e.id] ||= {});
+    p[`${tipo}_ruta`] = null; p[`${tipo}_nombre`] = null; p.actualizado = ahora();
+    demoDatos.guardar(d);
+    return copia(p);
+  },
+  urlArchivo: (ruta) => (ruta ? archivosDemo.get(ruta) || null : null),
+
+  // ----- Resultados y orden (admin) -----
+  async adminResultados(c) {
+    await pausa(); exigirAdmin(c);
+    const d = demoDatos.leer();
+    return copia({
+      etapas: ETAPAS.map((e) => { const x = d.etapas.find((y) => y.id === e.id) || {}; return { id: e.id, nombre: e.nombre, abierta: !!x.abierta, resultados_publicados: !!x.resultados_publicados, ranking: x.ranking || null }; }),
+      equipos: d.equipos.map((e) => ({ id: e.id, nombre_proyecto: e.nombre_proyecto, eje: e.eje, etapa_alcanzada: e.etapa_alcanzada, orden_semifinal: e.orden_semifinal, orden_final: e.orden_final, integrantes: (e.integrantes || []).map((i) => `${i.nombres} ${i.apellidos}`) })),
+      jurados: d.jurados.map((j) => ({ id: j.id, nombre: j.nombre, etapas: j.etapas })),
+      calificaciones: d.calificaciones,
+      sanciones: d.sanciones,
+      desempates: d.desempates,
+    });
+  },
+  async sancion(c, etapa, equipo, tipo, motivo) {
+    await pausa(); exigirAdmin(c);
+    const d = demoDatos.leer();
+    d.sanciones = d.sanciones.filter((x) => !(x.etapa === etapa && x.equipo_id === equipo));
+    if (tipo) {
+      if (!["walkover", "descalificado"].includes(tipo)) throw new Error("Sanción no válida.");
+      if (!String(motivo || "").trim()) throw new Error("Escribe el motivo de la sanción.");
+      d.sanciones.push({ etapa, equipo_id: equipo, tipo, motivo: String(motivo).trim() });
+    }
+    demoDatos.guardar(d);
+  },
+  async desempate(c, etapa, equipos, motivo) {
+    await pausa(); exigirAdmin(c);
+    if ((equipos || []).length < 2) throw new Error("Un desempate necesita al menos 2 equipos.");
+    if (!String(motivo || "").trim()) throw new Error("Escribe el motivo del desempate.");
+    const d = demoDatos.leer();
+    d.desempates.push({ id: uid(), etapa, equipos, motivo: String(motivo).trim(), creado: ahora() });
+    demoDatos.guardar(d);
+  },
+  async quitarDesempate(c, id) {
+    await pausa(); exigirAdmin(c);
+    const d = demoDatos.leer();
+    d.desempates = d.desempates.filter((x) => x.id !== id);
+    demoDatos.guardar(d);
+  },
+  async pasarFinal(c, equipos) {
+    await pausa(); exigirAdmin(c);
+    const d = demoDatos.leer();
+    if (d.calificaciones.some((x) => x.etapa === "final")) throw new Error("La Final ya tiene calificaciones: no se pueden cambiar los clasificados. Elimina primero los resultados de la Final si es una prueba.");
+    d.equipos.forEach((e) => { const si = equipos.includes(e.id); e.etapa_alcanzada = si ? "final" : "semifinal"; if (!si) e.orden_final = null; });
+    demoDatos.guardar(d);
+  },
+  async publicar(c, etapa, publicar, ranking) {
+    await pausa(); exigirAdmin(c);
+    const d = demoDatos.leer();
+    const et = d.etapas.find((x) => x.id === etapa);
+    if (!et) throw new Error("Etapa no válida.");
+    et.resultados_publicados = !!publicar;
+    if (publicar) et.ranking = ranking || null;
+    demoDatos.guardar(d);
+  },
+  async orden(c, etapa, equipos) {
+    await pausa(); exigirAdmin(c);
+    const d = demoDatos.leer();
+    const campo = etapa === "final" ? "orden_final" : "orden_semifinal";
+    d.equipos.forEach((e) => { const i = equipos.indexOf(e.id); e[campo] = i >= 0 ? i + 1 : null; });
+    demoDatos.guardar(d);
+  },
+
+  // ----- Proyección -----
+  async proyeccionPanel(c) {
+    await pausa();
+    const d = demoDatos.leer();
+    const cod = String(c).trim().toUpperCase();
+    if (cod !== ADMIN_DEMO && cod !== d.config.codigo_proyeccion) throw new Error("Tu código de proyección no es válido. Sal y vuelve a entrar.");
+    const orden = (e, et) => (et === "final" ? e.orden_final : e.orden_semifinal);
+    return copia({
+      config: { min_pitch: d.config.min_pitch, min_preguntas: d.config.min_preguntas, min_cambio: d.config.min_cambio },
+      etapas: ETAPAS.map((et) => ({
+        id: et.id, nombre: et.nombre,
+        equipos: d.equipos.filter((e) => et.id === "semifinal" || e.etapa_alcanzada === "final")
+          .sort((a, b) => (orden(a, et.id) ?? 1e9) - (orden(b, et.id) ?? 1e9) || String(a.creado).localeCompare(String(b.creado)))
+          .map((e) => ({ id: e.id, nombre_proyecto: e.nombre_proyecto, eje: e.eje, orden: orden(e, et.id), archivos: d.presentaciones[e.id] || {},
+            integrantes: (e.integrantes || []).map((i) => ({ nombre: `${i.nombres} ${i.apellidos}`, es_lider: i.es_lider })) })),
+      })),
+    });
   },
 
   async adminConfig(c, cambios) {
