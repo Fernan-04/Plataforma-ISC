@@ -1,0 +1,12 @@
+.claude/
+__pycache__/
+*.log
+
+# Credenciales locales
+.env
+.env.*
+
+# Solo para trabajar en local (no se publican)
+CLAUDE.md
+sql/
+servir.py
