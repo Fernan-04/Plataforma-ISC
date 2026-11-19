@@ -2312,3 +2312,15 @@ body.sin-scroll{ overflow:hidden; }
   .pie-webs{ font-size:.6rem; letter-spacing:.02em; }
   .pie-webs a{ overflow-wrap:normal; word-break:normal; }
 }
+
+/* Pie de la portada: los tres enlaces con el mismo formato de botón */
+.pie-enlaces{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+.pie-btn{ display:inline-flex; align-items:center; gap:.55em; padding:.6em 1.15em; border-radius:99px; white-space:nowrap;
+  font-size:.82rem; font-weight:600; letter-spacing:.02em; text-transform:none; color:#fff !important; text-decoration:none;
+  background:rgba(86,25,225,.38); border:1px solid rgba(185,162,255,.4); transition:transform .2s, background .2s, box-shadow .2s; }
+.pie-btn:hover{ transform:translateY(-2px); background:rgba(86,25,225,.65); box-shadow:0 10px 26px -10px rgba(86,25,225,.95); }
+.pie-btn svg{ width:1.2em; height:1.2em; flex:none; color:var(--lila); }
+@media (max-width:480px){
+  .pie-enlaces{ flex-direction:column; align-items:center; gap:8px; }
+  .pie-btn{ font-size:.8rem; }
+}

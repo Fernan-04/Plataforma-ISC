@@ -5,7 +5,7 @@
 // Impacto…), 3) decisión del jurado en sala registrada por el admin.
 // Walkover / descalificado: quedan fuera del ranking (al final, sin puesto).
 // =========================================================
-import { CRITERIOS, ORDEN_DESEMPATE, etapa as etapaDe } from "./rubrica.js?v=202611190703";
+import { CRITERIOS, ORDEN_DESEMPATE, etapa as etapaDe } from "./rubrica.js?v=202611190710";
 
 const prom = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
 const EPS = 1e-9;

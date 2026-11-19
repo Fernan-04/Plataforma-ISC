@@ -6,11 +6,11 @@
 // Presentaciones: archivos de cada equipo, orden de exposición (manual o
 // sorteo) y «Proyectar».
 // =========================================================
-import { api } from "./api.js?v=202611190703";
-import { $, $$, esc, I, aviso, modal, confirmar } from "./ui.js?v=202611190703";
-import { ETAPAS, CRITERIOS, TOTAL, etapa as etapaDe, eje as ejeDe } from "./rubrica.js?v=202611190703";
-import { calcularEtapa, empateCritico, unDecimal } from "./calculo.js?v=202611190703";
-import { abrirSala } from "./proyeccion.js?v=202611190703";
+import { api } from "./api.js?v=202611190710";
+import { $, $$, esc, I, aviso, modal, confirmar } from "./ui.js?v=202611190710";
+import { ETAPAS, CRITERIOS, TOTAL, etapa as etapaDe, eje as ejeDe } from "./rubrica.js?v=202611190710";
+import { calcularEtapa, empateCritico, unDecimal } from "./calculo.js?v=202611190710";
+import { abrirSala } from "./proyeccion.js?v=202611190710";
 
 const enEtapa = (e, et) => et === "semifinal" || e.etapa_alcanzada === "final";
 const corto = (n) => String(n || "").split(/\s+/).slice(0, 2).join(" ");
