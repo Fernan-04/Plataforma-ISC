@@ -1,13 +1,13 @@
 // =========================================================
 // Panel ISC UTP 2027 · arranque y portada
 // =========================================================
-import { api, ES_DEMO, DEMO_CODIGOS } from "./api.js?v=202611190650";
-import { $, esc, I, IMG, modal, fondoAnimado } from "./ui.js?v=202611190650";
-import { COMPETENCIA, ETAPAS, EJES, CRITERIOS, NIVELES, TOTAL, textoTiempos } from "./rubrica.js?v=202611190650";
-import { panelAdmin } from "./admin.js?v=202611190650";
-import { panelJurado } from "./jurado.js?v=202611190650";
-import { panelEquipo } from "./equipo.js?v=202611190650";
-import { panelProyeccion } from "./proyeccion.js?v=202611190650";
+import { api, ES_DEMO, DEMO_CODIGOS } from "./api.js?v=202611190703";
+import { $, esc, I, IMG, modal, fondoAnimado } from "./ui.js?v=202611190703";
+import { COMPETENCIA, ETAPAS, EJES, CRITERIOS, NIVELES, TOTAL, textoTiempos } from "./rubrica.js?v=202611190703";
+import { panelAdmin } from "./admin.js?v=202611190703";
+import { panelJurado } from "./jurado.js?v=202611190703";
+import { panelEquipo } from "./equipo.js?v=202611190703";
+import { panelProyeccion } from "./proyeccion.js?v=202611190703";
 
 const app = $("#app");
 const SESION = "isc-utp-sesion";
@@ -43,8 +43,8 @@ function portada() {
     </header>
     <main class="escena">
       <div>
-        <p class="escena__pre">IMPACT STARTUP COMPETITION 2027</p>
-        <img class="escena__logo escena__logo--impact" src="${IMG.impact}" alt="Impact Startup Competition · UTP Lima Centro" style="margin:0 auto">
+        <img class="escena__logo escena__logo--isc" src="${IMG.logo}" alt="Impact Startup Competition · UTP Jurados" style="margin:0 auto">
+        <p class="escena__pre">PROGRAMA LOCAL UTP · 2027</p>
         <h1 class="escena__titulo">Panel ISC UTP</h1>
         <p class="escena__desafio">«${esc(COMPETENCIA.desafio)}»</p>
         <p class="escena__sub">Calificación del jurado, presentaciones de los equipos y proyección del pitch de la Semifinal y la Final Local en un solo lugar.</p>
@@ -81,7 +81,12 @@ function portada() {
         </div>
       </div>
     </main>
-    <footer class="portada__pie">${COMPETENCIA.webs.map((w) => `<a href="https://${w}" target="_blank" rel="noopener">${w}</a>`).join(`<span class="pie-sep"> · </span>`)}</footer>
+    <footer class="portada__pie">
+      <a class="pie-ig" href="${COMPETENCIA.instagram.url}" target="_blank" rel="noopener" aria-label="Instagram de ISC UTP (${COMPETENCIA.instagram.usuario})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"/></svg>
+        Síguenos en Instagram <b>${COMPETENCIA.instagram.usuario}</b></a>
+      <span class="pie-webs">${COMPETENCIA.webs.map((w) => `<a href="https://${w}" target="_blank" rel="noopener">${w}</a>`).join(`<span class="pie-sep"> · </span>`)}</span>
+    </footer>
   </div>
   ${bandaDemo()}`;
   app.querySelectorAll(".puerta").forEach((b) => (b.onclick = () => pedirCodigo(b.dataset.rol)));
@@ -91,7 +96,7 @@ const ROLES = {
   jurado: { titulo: "Acceso de jurado", icono: "mazo", fondo: "linear-gradient(135deg,#FF7A2F,#FF9A55)", btn: "btn--naranja", boton: "Jurado" },
   equipo: { titulo: "Acceso de equipo", icono: "personas", fondo: "linear-gradient(135deg,#2BD98C,#0E8A5F)", btn: "btn--naranja", boton: "Equipo" },
   proyeccion: { titulo: "Acceso de proyección", icono: "pizarra", fondo: "linear-gradient(135deg,#38D3F5,#16A34A)", btn: "btn--naranja", boton: "Proyección" },
-  admin: { titulo: "Acceso de administrador", icono: "escudo", fondo: "linear-gradient(135deg,#7B61FF,#38D3F5)", btn: "btn--primario", boton: "Admin" },
+  admin: { titulo: "Acceso de administrador", icono: "escudo", fondo: "linear-gradient(135deg,#5619E1,#38D3F5)", btn: "btn--primario", boton: "Admin" },
   coordinador: { boton: "Admin" },
 };
 

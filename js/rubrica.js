@@ -11,6 +11,7 @@ export const COMPETENCIA = {
   desafio: "Amazonía Viva: Innovación para Conservar, Prosperar y Transformar",
   premio: "Beca completa para el Impact Bootcamp Internacional",
   webs: ["www.impactstartupcompetition.com", "www.scaleup4.com"],
+  instagram: { usuario: "@iscutp", url: "https://www.instagram.com/iscutp/" },
 };
 
 // Ejes del desafío: cada proyecto se alinea con al menos uno

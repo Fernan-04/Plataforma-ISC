@@ -3,8 +3,8 @@
 // Publicado usa Supabase. En modo de prueba (?demo en la dirección)
 // usa datos de ejemplo guardados solo en este navegador.
 // =========================================================
-import { SUPABASE_URL, SUPABASE_KEY } from "./config.js?v=202611190650";
-import { validarIntegrantes, FECHA_LIMITE, TIEMPOS, ETAPAS, CRITERIOS } from "./rubrica.js?v=202611190650";
+import { SUPABASE_URL, SUPABASE_KEY } from "./config.js?v=202611190703";
+import { validarIntegrantes, FECHA_LIMITE, TIEMPOS, ETAPAS, CRITERIOS } from "./rubrica.js?v=202611190703";
 
 const DEMO = typeof window !== "undefined" && window.__ISC_DEMO__ === true;
 export const ES_DEMO = DEMO;

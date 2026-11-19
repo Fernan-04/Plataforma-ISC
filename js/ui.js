@@ -93,4 +93,4 @@ export function lanzarConfeti() {
   try { window.confetti?.({ particleCount: 110, spread: 75, origin: { y: 0.7 }, colors: ["#FF6A1F", "#1FCBEA", "#A98BFF", "#FFC23D", "#ffffff"] }); } catch { /* opcional */ }
 }
 
-export const IMG = { impact: "img/impact-startup-competition.png", scale: "img/scale-incubadora.png", icono: "img/icono-isc.png" };
+export const IMG = { logo: "img/logo-isc.png", scale: "img/scale-incubadora.png", icono: "img/logo-isc-icono.png" };
