@@ -7,9 +7,9 @@
 // Teclas (clicker): → / PageDown / Espacio = siguiente · ← / PageUp = anterior
 //                   B = pantalla negra · T = iniciar / pausar el tiempo
 // =========================================================
-import { api } from "./api.js?v=202611190633";
-import { $, $$, esc, I, aviso, fondoAnimado, IMG } from "./ui.js?v=202611190633";
-import { eje as ejeDe, etapa as etapaDe, textoTiempos } from "./rubrica.js?v=202611190633";
+import { api } from "./api.js?v=202611190650";
+import { $, $$, esc, I, aviso, fondoAnimado, IMG } from "./ui.js?v=202611190650";
+import { eje as ejeDe, etapa as etapaDe, textoTiempos } from "./rubrica.js?v=202611190650";
 
 const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";

@@ -1,13 +1,13 @@
 // =========================================================
 // Panel ISC UTP 2027 · arranque y portada
 // =========================================================
-import { api, ES_DEMO, DEMO_CODIGOS } from "./api.js?v=202611190633";
-import { $, esc, I, IMG, modal, fondoAnimado } from "./ui.js?v=202611190633";
-import { COMPETENCIA, ETAPAS, EJES, CRITERIOS, NIVELES, TOTAL, textoTiempos } from "./rubrica.js?v=202611190633";
-import { panelAdmin } from "./admin.js?v=202611190633";
-import { panelJurado } from "./jurado.js?v=202611190633";
-import { panelEquipo } from "./equipo.js?v=202611190633";
-import { panelProyeccion } from "./proyeccion.js?v=202611190633";
+import { api, ES_DEMO, DEMO_CODIGOS } from "./api.js?v=202611190650";
+import { $, esc, I, IMG, modal, fondoAnimado } from "./ui.js?v=202611190650";
+import { COMPETENCIA, ETAPAS, EJES, CRITERIOS, NIVELES, TOTAL, textoTiempos } from "./rubrica.js?v=202611190650";
+import { panelAdmin } from "./admin.js?v=202611190650";
+import { panelJurado } from "./jurado.js?v=202611190650";
+import { panelEquipo } from "./equipo.js?v=202611190650";
+import { panelProyeccion } from "./proyeccion.js?v=202611190650";
 
 const app = $("#app");
 const SESION = "isc-utp-sesion";

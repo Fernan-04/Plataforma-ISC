@@ -3,8 +3,8 @@
 // Publicado usa Supabase. En modo de prueba (?demo en la dirección)
 // usa datos de ejemplo guardados solo en este navegador.
 // =========================================================
-import { SUPABASE_URL, SUPABASE_KEY } from "./config.js?v=202611190633";
-import { validarIntegrantes, FECHA_LIMITE, TIEMPOS, ETAPAS, CRITERIOS } from "./rubrica.js?v=202611190633";
+import { SUPABASE_URL, SUPABASE_KEY } from "./config.js?v=202611190650";
+import { validarIntegrantes, FECHA_LIMITE, TIEMPOS, ETAPAS, CRITERIOS } from "./rubrica.js?v=202611190650";
 
 const DEMO = typeof window !== "undefined" && window.__ISC_DEMO__ === true;
 export const ES_DEMO = DEMO;
@@ -41,6 +41,7 @@ const real = {
   adminEtapa: (c, etapa, abierta) => rpc("isc_admin_etapa", { p_codigo: c, p_etapa: etapa, p_abierta: abierta }),
   eliminarResultados: (c, etapa, confirmacion) => rpc("isc_admin_eliminar_resultados", { p_codigo: c, p_etapa: etapa, p_confirmacion: confirmacion }),
   borrarTodo: (c, confirmacion) => rpc("isc_admin_borrar_todo", { p_codigo: c, p_confirmacion: confirmacion }),
+  cambiarCodigo: (c, nuevo) => rpc("isc_admin_cambiar_codigo", { p_codigo: c, p_nuevo: nuevo }),
   // Jurado
   juradoPanel: (c) => rpc("isc_jurado_panel", { p_codigo: c }),
   calificar: (c, k) => rpc("isc_jurado_calificar", {
@@ -131,7 +132,7 @@ const LETRAS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 function codigoDemo(d, prefijo) {
   const usados = new Set([...d.jurados.map((x) => x.codigo), ...d.equipos.map((x) => x.codigo), d.config.codigo_proyeccion, ADMIN_DEMO]);
   let c;
-  do { c = prefijo + Array.from({ length: 4 }, () => LETRAS[Math.floor(Math.random() * LETRAS.length)]).join(""); } while (usados.has(c));
+  do { c = prefijo + Array.from({ length: 6 }, () => LETRAS[Math.floor(Math.random() * LETRAS.length)]).join(""); } while (usados.has(c));
   return c;
 }
 function exigirAdmin(c) {
@@ -268,6 +269,12 @@ const demo = {
     demoDatos.guardar(d);
   },
 
+  async cambiarCodigo(c, nuevo) {
+    await pausa(); exigirAdmin(c);
+    if (String(nuevo || "").trim().length < 8) throw new Error("El código nuevo debe tener al menos 8 caracteres.");
+    return { demo: true };
+  },
+
   async eliminarResultados(c, etapa, confirmacion) {
     await pausa(); exigirAdmin(c);
     if (String(confirmacion).trim().toUpperCase() !== "BORRAR") throw new Error("Escribe BORRAR para confirmar.");
@@ -275,6 +282,9 @@ const demo = {
     const sale = d.calificaciones.filter((x) => etapa === "todas" || x.etapa === etapa);
     if (sale.length) d.borrados.push({ tabla: "isc_calificaciones", datos: sale, motivo: `Eliminar resultados (${etapa})`, creado: ahora() });
     d.calificaciones = d.calificaciones.filter((x) => !(etapa === "todas" || x.etapa === etapa));
+    d.sanciones = d.sanciones.filter((x) => !(etapa === "todas" || x.etapa === etapa));
+    d.desempates = d.desempates.filter((x) => !(etapa === "todas" || x.etapa === etapa));
+    d.etapas.forEach((e) => { if (etapa === "todas" || e.id === etapa) { e.resultados_publicados = false; e.ranking = null; } });
     demoDatos.guardar(d);
     return { calificaciones: sale.length, sanciones: 0, desempates: 0 };
   },
@@ -286,8 +296,8 @@ const demo = {
     if (d.config.integrantes_bloqueados) throw new Error("Los integrantes están bloqueados. Desbloquéalos en la pestaña Equipos y vuelve a intentarlo.");
     const r = { equipos: d.equipos.length, jurados: d.jurados.length, calificaciones: d.calificaciones.length };
     d.borrados.push({ tabla: "todo", datos: { equipos: d.equipos, jurados: d.jurados, calificaciones: d.calificaciones }, motivo: "Borrar todo", creado: ahora() });
-    d.equipos = []; d.jurados = []; d.calificaciones = [];
-    d.etapas.forEach((e) => (e.abierta = false));
+    d.equipos = []; d.jurados = []; d.calificaciones = []; d.sanciones = []; d.desempates = []; d.presentaciones = {};
+    d.etapas.forEach((e) => { e.abierta = false; e.resultados_publicados = false; e.ranking = null; });
     demoDatos.guardar(d);
     return r;
   },

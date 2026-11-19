@@ -4,10 +4,10 @@
 // Todo lo que se guarda pasa por la base, que vuelve a revisar
 // el código del admin y las reglas (2 a 5 integrantes, etc.).
 // =========================================================
-import { api, ES_DEMO, demoDatos } from "./api.js?v=202611190633";
-import { $, esc, I, avatar, aviso, modal, confirmar, fondoAnimado } from "./ui.js?v=202611190633";
-import { ETAPAS, EJES, TIPOS_INTEGRANTE, EQUIPO_REGLAS, validarIntegrantes, textoTiempos, eje as ejeDe } from "./rubrica.js?v=202611190633";
-import { pestanaResultados, pestanaPresentaciones } from "./admin-etapas.js?v=202611190633";
+import { api, ES_DEMO, demoDatos } from "./api.js?v=202611190650";
+import { $, esc, I, avatar, aviso, modal, confirmar, fondoAnimado } from "./ui.js?v=202611190650";
+import { ETAPAS, EJES, TIPOS_INTEGRANTE, EQUIPO_REGLAS, validarIntegrantes, textoTiempos, eje as ejeDe } from "./rubrica.js?v=202611190650";
+import { pestanaResultados, pestanaPresentaciones } from "./admin-etapas.js?v=202611190650";
 
 const PESTANAS = [
   { id: "equipos", nombre: "Equipos", icono: "personas" },
@@ -400,6 +400,19 @@ export function panelAdmin(app, s, h) {
     cuerpo.innerHTML = `
       <div class="adm-ajustes">
         <section class="tarjeta adm-caja">
+          <h2>${I.llave}Cambiar mi código de administrador</h2>
+          <p class="ayuda">Mínimo 8 caracteres. Distingue mayúsculas y minúsculas. Solo tú debes conocerlo: no lo escribas en chats ni archivos.</p>
+          <form class="form" data-form-codigo autocomplete="off">
+            <label class="campo"><span>Código nuevo</span>
+              <div class="codigo-caja"><input name="nuevo" type="password" class="codigo-input codigo-input--oculto adm-cod" maxlength="60" autocomplete="new-password" spellcheck="false">
+              <button type="button" class="codigo-ver" data-ver-cod aria-label="Mostrar el código">👁</button></div></label>
+            <label class="campo"><span>Repite el código nuevo</span><input name="repite" type="password" class="adm-cod-2" maxlength="60" autocomplete="new-password" spellcheck="false"></label>
+            <p class="error" aria-live="polite"></p>
+            <div><button class="btn btn--naranja">${I.check}Cambiar código</button></div>
+          </form>
+        </section>
+
+        <section class="tarjeta adm-caja">
           <h2>${I.mazo}Calificación del jurado</h2>
           <p class="ayuda">Ábrela al empezar cada etapa y ciérrala al terminar. Con la etapa cerrada, los jurados solo pueden ver.</p>
           ${(datos.etapas || []).map((et) => `<div class="adm-etapa">
@@ -471,6 +484,31 @@ export function panelAdmin(app, s, h) {
       try { await api.adminConfig(s.codigo, { min_pitch: p, min_preguntas: q, min_cambio: cb }); aviso("Tiempos guardados"); await cargar(); }
       catch (ex) { aviso(ex.message, "error"); }
     };
+    const fc = $("[data-form-codigo]", cuerpo);
+    $("[data-ver-cod]", fc).onclick = (ev) => {
+      const oculto = fc.elements.nuevo.type === "password";
+      fc.elements.nuevo.type = fc.elements.repite.type = oculto ? "text" : "password";
+      ev.currentTarget.textContent = oculto ? "🙈" : "👁";
+    };
+    fc.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const err = $(".error", fc);
+      const nuevo = fc.elements.nuevo.value.trim(), repite = fc.elements.repite.value.trim();
+      err.textContent = "";
+      if (nuevo.length < 8) { err.textContent = "El código nuevo debe tener al menos 8 caracteres."; return; }
+      if (nuevo !== repite) { err.textContent = "Los dos códigos no coinciden."; return; }
+      const ok = await confirmar("¿Cambiar tu código de administrador?", "El código actual dejará de funcionar al instante. Anota el nuevo en un lugar seguro.", { boton: "Cambiar código" });
+      if (!ok) return;
+      try {
+        const r = await api.cambiarCodigo(s.codigo, nuevo);
+        if (r?.demo) { aviso("Modo de prueba: el código no se cambia (sigue siendo ADMIN1)."); fc.reset(); return; }
+        s.codigo = nuevo;
+        try { const ses = JSON.parse(sessionStorage.getItem("isc-utp-sesion")); if (ses) { ses.codigo = nuevo; sessionStorage.setItem("isc-utp-sesion", JSON.stringify(ses)); } } catch { /* sin almacenamiento */ }
+        fc.reset();
+        aviso("Código de administrador cambiado");
+      } catch (ex) { err.textContent = ex.message; }
+    };
+
     const ff = $("[data-form-fecha]", cuerpo);
     ff.onsubmit = async (ev) => {
       ev.preventDefault();

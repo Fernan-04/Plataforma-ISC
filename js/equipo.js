@@ -3,11 +3,11 @@
 // Su equipo y turno, cuenta regresiva al cierre, subir PDF / PPT / video
 // (máx. 50 MB), ensayar el pitch y ver sus resultados cuando se publiquen.
 // =========================================================
-import { api } from "./api.js?v=202611190633";
-import { $, $$, esc, I, aviso, confirmar, fondoAnimado, lanzarConfeti } from "./ui.js?v=202611190633";
-import { CRITERIOS, TOTAL, TIPOS_INTEGRANTE, eje as ejeDe, etapa as etapaDe, textoTiempos } from "./rubrica.js?v=202611190633";
-import { abrirSala } from "./proyeccion.js?v=202611190633";
-import { unDecimal } from "./calculo.js?v=202611190633";
+import { api } from "./api.js?v=202611190650";
+import { $, $$, esc, I, aviso, confirmar, fondoAnimado, lanzarConfeti } from "./ui.js?v=202611190650";
+import { CRITERIOS, TOTAL, TIPOS_INTEGRANTE, eje as ejeDe, etapa as etapaDe, textoTiempos } from "./rubrica.js?v=202611190650";
+import { abrirSala } from "./proyeccion.js?v=202611190650";
+import { unDecimal } from "./calculo.js?v=202611190650";
 
 const MAX = 50 * 1024 * 1024;
 const ZONA = "America/Lima";
