@@ -4,10 +4,10 @@
 // Todo lo que se guarda pasa por la base, que vuelve a revisar
 // el código del admin y las reglas (2 a 5 integrantes, etc.).
 // =========================================================
-import { api, ES_DEMO, demoDatos } from "./api.js?v=202611190710";
-import { $, esc, I, avatar, aviso, modal, confirmar, fondoAnimado } from "./ui.js?v=202611190710";
-import { ETAPAS, EJES, TIPOS_INTEGRANTE, EQUIPO_REGLAS, validarIntegrantes, textoTiempos, eje as ejeDe } from "./rubrica.js?v=202611190710";
-import { pestanaResultados, pestanaPresentaciones } from "./admin-etapas.js?v=202611190710";
+import { api, ES_DEMO, demoDatos } from "./api.js?v=202611210441";
+import { $, esc, I, avatar, aviso, modal, confirmar, fondoAnimado } from "./ui.js?v=202611210441";
+import { ETAPAS, EJES, TIPOS_INTEGRANTE, EQUIPO_REGLAS, validarIntegrantes, textoTiempos, eje as ejeDe } from "./rubrica.js?v=202611210441";
+import { pestanaResultados, pestanaPresentaciones } from "./admin-etapas.js?v=202611210441";
 
 const PESTANAS = [
   { id: "equipos", nombre: "Equipos", icono: "personas" },

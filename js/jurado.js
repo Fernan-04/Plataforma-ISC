@@ -5,9 +5,9 @@
 // comentario general para el equipo, o «No se presentó».
 // La base vuelve a revisar todo (niveles válidos, etapa abierta, etc.).
 // =========================================================
-import { api } from "./api.js?v=202611190710";
-import { $, $$, esc, I, avatar, aviso, confirmar, fondoAnimado, lanzarConfeti } from "./ui.js?v=202611190710";
-import { ETAPAS, CRITERIOS, NIVELES, TOTAL, TIPOS_INTEGRANTE, eje as ejeDe, etapa as etapaDe } from "./rubrica.js?v=202611190710";
+import { api } from "./api.js?v=202611210441";
+import { $, $$, esc, I, avatar, aviso, confirmar, fondoAnimado, lanzarConfeti } from "./ui.js?v=202611210441";
+import { ETAPAS, CRITERIOS, NIVELES, TOTAL, TIPOS_INTEGRANTE, eje as ejeDe, etapa as etapaDe } from "./rubrica.js?v=202611210441";
 
 const CLAVE_ETAPA = "isc-utp-jurado-etapa";
 const LINKEDIN = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>`;
@@ -143,7 +143,20 @@ export function panelJurado(app, s, h) {
     const e = et.equipos[n];
     const previa = calDe(etapaId, equipoId);
     const soloLeer = !et.abierta;
-    const elegidos = { ...(previa?.puntajes || {}) };
+    // Borrador guardado en este navegador (por si se recargó la página o se cayó el internet)
+    const claveBorr = `isc-utp-borrador-${datos.jurado?.id || "j"}-${etapaId}-${equipoId}`;
+    const borr = soloLeer ? null : (() => {
+      try {
+        const b = JSON.parse(localStorage.getItem(claveBorr));
+        // Solo sirve si es más nuevo que lo ya guardado en la base
+        if (b && (!previa?.actualizado || b.t > new Date(previa.actualizado).getTime())) return b;
+      } catch { /* sin almacenamiento */ }
+      return null;
+    })();
+    const base = borr
+      ? { puntajes: borr.puntajes || {}, justificaciones: borr.justificaciones || {}, comentario: borr.comentario || "", no_presento: !!borr.no_presento }
+      : previa;
+    const elegidos = { ...(base?.puntajes || {}) };
     const dis = soloLeer ? "disabled" : "";
     document.title = `${e.nombre_proyecto} · Calificar · ISC UTP`;
 
@@ -166,8 +179,9 @@ export function panelJurado(app, s, h) {
       </section>
       ${soloLeer ? `<div class="cerrado">${I.candado}<span>La calificación de esta etapa está cerrada: solo puedes ver${previa ? " lo que guardaste" : ""}.</span></div>` : ""}
       ${previa ? `<p class="nota">Ya calificaste a este equipo${previa.no_presento ? " como «No se presentó»" : ` con <b>${previa.total} pts</b>`}. ${soloLeer ? "" : "Puedes corregir y volver a guardar."}</p>` : ""}
+      ${borr ? `<p class="nota">${I.info} Recuperamos lo que escribiste y <b>aún no guardaste</b>. Revísalo y pulsa «Guardar calificación».</p>` : ""}
       <form data-form novalidate>
-        <label class="check jur-np"><input type="checkbox" name="no_presento" ${previa?.no_presento ? "checked" : ""} ${dis}>
+        <label class="check jur-np"><input type="checkbox" name="no_presento" ${base?.no_presento ? "checked" : ""} ${dis}>
           <span><b>El equipo no se presentó</b><small>Walkover: su puntaje será 0 y no hace falta calificar los criterios.</small></span></label>
         <div data-criterios>
           ${CRITERIOS.map((c, ci) => `
@@ -186,12 +200,12 @@ export function panelJurado(app, s, h) {
                   <span class="nivel__nombre">${NIVELES[i]}</span><span class="nivel__desc">${esc(d)}</span><span class="nivel__pts">${c.puntos[i]}</span></button>`).join("")}
               </div>
               <label class="campo"><span>Justificación *</span>
-                <textarea name="just_${c.id}" rows="2" maxlength="600" placeholder="¿Por qué este nivel? (una o dos frases)" ${dis}>${esc(previa?.justificaciones?.[c.id] || "")}</textarea></label>
+                <textarea name="just_${c.id}" rows="2" maxlength="600" placeholder="¿Por qué este nivel? (una o dos frases)" ${dis}>${esc(base?.justificaciones?.[c.id] || "")}</textarea></label>
             </div>
           </section>`).join("")}
         </div>
         <label class="campo jur-comentario"><span>Comentario general para el equipo *</span>
-          <textarea name="comentario" rows="4" maxlength="1500" placeholder="Fortalezas, qué mejorar y recomendaciones. El equipo lo verá en su panel." ${dis}>${esc(previa?.comentario || "")}</textarea></label>
+          <textarea name="comentario" rows="4" maxlength="1500" placeholder="Fortalezas, qué mejorar y recomendaciones. El equipo lo verá en su panel." ${dis}>${esc(base?.comentario || "")}</textarea></label>
         <div class="enviar">
           <div class="enviar__total" data-total>0<small> / ${TOTAL}</small></div>
           <div class="enviar__info"><div class="progreso"><i data-barra style="width:0%"></i></div><span data-falta></span></div>
@@ -242,12 +256,30 @@ export function panelJurado(app, s, h) {
       $$(".nivel", caja).forEach((x) => { const si = x === b; x.setAttribute("aria-pressed", si); x.setAttribute("aria-checked", si); });
       sucio = true;
       refrescar();
+      guardarBorrador();
     });
-    form.addEventListener("input", () => { sucio = true; refrescar(); });
-    form.addEventListener("change", () => { sucio = true; refrescar(); });
+    form.addEventListener("input", () => { sucio = true; refrescar(); guardarBorrador(); });
+    form.addEventListener("change", () => { sucio = true; refrescar(); guardarBorrador(); });
+
+    // Borrador en este navegador: se guarda con cada cambio y se borra al guardar en la base
+    function guardarBorrador() {
+      if (soloLeer) return;
+      const justificaciones = {};
+      for (const c of CRITERIOS) justificaciones[c.id] = form.elements[`just_${c.id}`].value;
+      try {
+        localStorage.setItem(claveBorr, JSON.stringify({
+          t: Date.now(), puntajes: { ...elegidos }, justificaciones,
+          comentario: form.elements.comentario.value, no_presento: np.checked,
+        }));
+      } catch { /* sin almacenamiento */ }
+    }
+    const borrarBorrador = () => { try { localStorage.removeItem(claveBorr); } catch { /* sin almacenamiento */ } };
+    if (borr) sucio = true;
 
     $("[data-volver]", app).onclick = async () => {
       if (sucio && !(await confirmar("¿Volver sin guardar?", "Tienes cambios sin guardar en esta calificación.", { boton: "Volver sin guardar", peligro: true }))) return;
+      borrarBorrador();
+      sucio = false;
       inicio();
       window.scrollTo?.(0, 0);
     };
@@ -280,6 +312,7 @@ export function panelJurado(app, s, h) {
         });
         datos.calificaciones = datos.calificaciones.filter((x) => !(x.etapa === etapaId && x.equipo_id === equipoId)).concat(r);
         sucio = false;
+        borrarBorrador();
         aviso(noPres ? "Guardado: no se presentó" : `Calificación guardada · ${r.total} pts`);
         const pend = et.equipos.filter((q) => !calDe(etapaId, q.id)).length;
         if (!pend) { lanzarConfeti(); aviso(`¡Listo! Calificaste a todos los equipos de la ${etapaDe(etapaId)?.corto || "etapa"}.`); }
@@ -293,6 +326,11 @@ export function panelJurado(app, s, h) {
     refrescar();
     window.scrollTo?.(0, 0);
   }
+
+  // Aviso del navegador si se intenta cerrar o recargar con cambios sin guardar
+  window.addEventListener("beforeunload", (ev) => {
+    if (sucio && document.body.contains(app) && $("[data-form]", app)) { ev.preventDefault(); ev.returnValue = ""; }
+  });
 
   cargar();
 }

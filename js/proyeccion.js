@@ -7,24 +7,41 @@
 // Teclas (clicker): → / PageDown / Espacio = siguiente · ← / PageUp = anterior
 //                   B = pantalla negra · T = iniciar / pausar el tiempo
 // =========================================================
-import { api } from "./api.js?v=202611190710";
-import { $, $$, esc, I, aviso, fondoAnimado, IMG } from "./ui.js?v=202611190710";
-import { eje as ejeDe, etapa as etapaDe, textoTiempos } from "./rubrica.js?v=202611190710";
+import { api } from "./api.js?v=202611210441";
+import { $, $$, esc, I, aviso, fondoAnimado, IMG } from "./ui.js?v=202611210441";
+import { eje as ejeDe, etapa as etapaDe, textoTiempos } from "./rubrica.js?v=202611210441";
 
-const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+// Visor de PDF: primero la copia propia (vendor/pdfjs, misma web del panel);
+// si fallara, la de cdnjs. Así la sala no depende de otro servidor.
+const PDFJS_FUENTES = [
+  { lib: "vendor/pdfjs/pdf.min.js", worker: "vendor/pdfjs/pdf.worker.min.js" },
+  { lib: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" },
+];
 const CLAVE_ETAPA = "isc-utp-proy-etapa";
 
 let cargaPdfjs = null;
-function pdfjs() {
-  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-  cargaPdfjs ||= new Promise((ok, mal) => {
+function cargarScript(src) {
+  return new Promise((ok, mal) => {
     const sc = document.createElement("script");
-    sc.src = PDFJS;
-    sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER; ok(window.pdfjsLib); };
-    sc.onerror = () => { cargaPdfjs = null; mal(new Error("No se pudo cargar el visor de PDF. Revisa la conexión a internet.")); };
+    sc.src = src;
+    sc.onload = () => (window.pdfjsLib ? ok() : mal(new Error("sin pdfjsLib")));
+    sc.onerror = () => { sc.remove(); mal(new Error("no cargó")); };
     document.head.append(sc);
   });
+}
+function pdfjs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  cargaPdfjs ||= (async () => {
+    for (const f of PDFJS_FUENTES) {
+      try {
+        await cargarScript(f.lib);
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = f.worker;
+        return window.pdfjsLib;
+      } catch { /* se prueba la siguiente fuente */ }
+    }
+    cargaPdfjs = null;
+    throw new Error("No se pudo cargar el visor de PDF. Revisa la conexión a internet.");
+  })();
   return cargaPdfjs;
 }
 
